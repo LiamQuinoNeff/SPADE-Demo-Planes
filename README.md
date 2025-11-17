@@ -1,6 +1,6 @@
 **Overview**
 
-Esta carpeta contiene una pequeña simulación de control de tráfico aéreo usando agentes SPADE (Python), adaptado del ejemplo en JADE (Java).
+Esta carpeta contiene una pequeña simulación de control de tráfico aéreo usando agentes SPADE (Python), adaptado de un ejemplo en JADE (Java).
 
 **Files**
 - `hostAgent.py`: entrypoint — crea y arranca la `Torre` y N `Avion` agents.
@@ -44,3 +44,4 @@ py hostAgent.py
   - No await en `add_behaviour()` (no es awaitable).
   - La `Torre` ya no se detiene tras procesar un solo mensaje.
 - La simulación básica funciona: la torre concede permiso a un avión a la vez; éste aterriza y libera la pista; otros aviones reciben rechazo hasta que la pista se libera.
+
