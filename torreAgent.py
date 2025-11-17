@@ -1,0 +1,68 @@
+"""
+TorreAgent (agent) - controla la pista
+
+Este módulo implementa la lógica de la Torre de control.
+La Torre recibe mensajes de los aviones y responde según el estado
+de la pista (`pista_ocupada`). Su comportamiento principal es leer
+mensajes y responder con performatives y bodies sencillos.
+"""
+
+import spade
+from spade.agent import Agent
+from spade.behaviour import CyclicBehaviour
+from spade.message import Message
+
+
+class TorreAgent(Agent):
+    class RecvBehav(CyclicBehaviour):
+        async def run(self):
+            # Cada iteración intenta recibir un mensaje con timeout corto
+            print("Listening for messages")
+            msg = await self.receive(timeout=1)
+            if msg is None:
+                return
+            sender = str(msg.sender)
+            body = msg.body
+            # Mostrar resumen del mensaje recibido (depuración)
+            print(f"{self.agent.name}: reporte de {sender} -> {body}")
+
+            # Preparar respuesta básica
+            reply = Message(to=sender)
+
+            # Lógica de la torre según el contenido (body) del mensaje
+            if body == "volando":
+                # Acknowledge inform
+                reply.set_metadata("performative", "inform")
+                reply.body = "recibido"
+            elif body == "aterrizar":
+                # Petición para aterrizar
+                if self.agent.pista_ocupada:
+                    # Pista ocupada: rechazo
+                    reply.set_metadata("performative", "reject-proposal")
+                    reply.body = "rechazo"
+                else:
+                    # Pista libre: aceptar y marcarla ocupada
+                    print(f"{self.agent.name}: permiso para {sender}")
+                    reply.set_metadata("performative", "accept-proposal")
+                    reply.body = "aceptar"
+                    self.agent.pista_ocupada = True
+            elif body in ("liberar", "fin"):
+                # El avión notifica que liberó la pista
+                self.agent.pista_ocupada = False
+                reply.set_metadata("performative", "inform")
+                reply.body = "liberado"
+            else:
+                # Mensaje no entendido
+                reply.set_metadata("performative", "not-understood")
+                reply.body = "desconocido"
+
+            # Enviar la respuesta al remitente
+            await self.send(reply)
+
+    async def setup(self):
+        # Mensaje de inicio del agente Torre
+        print(f"Torre {str(self.jid)} started")
+        # Bandera que indica si la pista está ocupada
+        self.pista_ocupada = False
+        # Añadir comportamiento receptor de mensajes
+        self.add_behaviour(self.RecvBehav())
