@@ -17,17 +17,18 @@ class TorreAgent(Agent):
     class RecvBehav(CyclicBehaviour):
         async def run(self):
             # Cada iteración intenta recibir un mensaje con timeout corto
-            print("Listening for messages")
+            # print("[Torre] Escuchando mensajes...")  # Comentado para reducir ruido
             msg = await self.receive(timeout=1)
             if msg is None:
                 return
-            sender = str(msg.sender)
+            sender_full = str(msg.sender)
+            sender_name = sender_full.split('@')[0]
             body = msg.body
             # Mostrar resumen del mensaje recibido (depuración)
-            print(f"{self.agent.name}: reporte de {sender} -> {body}")
+            # print(f"[Torre] Mensaje de {sender_name}: {body}")  # Comentado para reducir ruido
 
             # Preparar respuesta básica
-            reply = Message(to=sender)
+            reply = Message(to=sender_full)
 
             # Lógica de la torre según el contenido (body) del mensaje
             if body == "volando":
@@ -38,16 +39,18 @@ class TorreAgent(Agent):
                 # Petición para aterrizar
                 if self.agent.pista_ocupada:
                     # Pista ocupada: rechazo
+                    print(f"[Torre] Solicitud rechazada para {sender_name} - pista ocupada")
                     reply.set_metadata("performative", "reject-proposal")
                     reply.body = "rechazo"
                 else:
                     # Pista libre: aceptar y marcarla ocupada
-                    print(f"{self.agent.name}: permiso para {sender}")
+                    print(f"[Torre] Permiso concedido a {sender_name}")
                     reply.set_metadata("performative", "accept-proposal")
                     reply.body = "aceptar"
                     self.agent.pista_ocupada = True
             elif body in ("liberar", "fin"):
                 # El avión notifica que liberó la pista
+                print(f"[Torre] Pista liberada por {sender_name}")
                 self.agent.pista_ocupada = False
                 reply.set_metadata("performative", "inform")
                 reply.body = "liberado"
@@ -61,7 +64,7 @@ class TorreAgent(Agent):
 
     async def setup(self):
         # Mensaje de inicio del agente Torre
-        print(f"Torre {str(self.jid)} started")
+        print(f"[Sistema] Torre de control iniciada")
         # Bandera que indica si la pista está ocupada
         self.pista_ocupada = False
         # Añadir comportamiento receptor de mensajes

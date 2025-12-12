@@ -20,24 +20,27 @@ class HostAgent(Agent):
         # Crear y arrancar la Torre
         torre = TorreAgent("torre@localhost", "123456abcd.")
         await torre.start(auto_register=True)
-        print("Torre started")
+        print("[Host] Torre de control arrancada")
 
         # Crear y arrancar N aviones
+        print(f"[Host] Creando {self.numAviones} aviones...")
         for i in range(self.numAviones):
             avion = AvionAgent(f"avion{i}@localhost", "123456abcd.")
             await avion.start(auto_register=True)
-            print(f"avion{i} started")
 
         # Esperar que la Torre termine (en esta demo normalmente se interrumpe manualmente)
         await spade.wait_until_finished(torre)
-        print("Agents finished")
+        print("[Sistema] Simulación finalizada")
 
 
 async def main():
+    print(f"{'='*70}")
+    print(f"SIMULACIÓN DE CONTROL DE TRÁFICO AÉREO")
+    print(f"{'='*70}\n")
     # Crear el host y arrancarlo
     host = HostAgent('host@localhost', '123456abcd.')
     await host.start()
-    print("Host agent started")
+    print("[Sistema] Agente host iniciado\n")
     await spade.wait_until_finished(host)
 
 

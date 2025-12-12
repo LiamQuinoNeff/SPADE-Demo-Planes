@@ -54,15 +54,15 @@ class AvionAgent(Agent):
 			body = msg.body
 			# La Torre responde con cadenas simples en el body
 			if body == "recibido":
-				print(f"->{self.agent.name} confirmación de la Torre")
+				print(f"[{self.agent.name}] Confirmación recibida de la Torre")
 			elif body == "aceptar":
 				# Inicia el comportamiento de aterrizaje (se ejecutará una vez)
-				print(f"=>\t{self.agent.name} (inicio aterrizaje)")
+				print(f"[{self.agent.name}] Iniciando aterrizaje")
 				# add_behaviour no es awaitable, se invoca directamente
 				self.agent.add_behaviour(self.agent.LandingBehav())
 			elif body == "rechazo":
 				# Rechazo: el avión intentará de nuevo en el siguiente RequestLanding
-				print(f"{self.agent.name}: rechazo de aterrizaje")
+				print(f"[{self.agent.name}] Solicitud rechazada - pista ocupada")
 
 
 	# Comportamiento que simula el aterrizaje (una sola ejecución)
@@ -70,7 +70,7 @@ class AvionAgent(Agent):
 		async def run(self):
 			# Simula tiempo de aterrizaje
 			await asyncio.sleep(2)
-			print(f"=>\t{self.agent.name} (fin aterrizaje)")
+			print(f"[{self.agent.name}] Aterrizaje completado - liberando pista")
 			# Notifica a la Torre que libera la pista
 			msg = Message(to="torre@localhost")
 			msg.set_metadata("performative", "inform")
@@ -82,9 +82,9 @@ class AvionAgent(Agent):
 
 	async def setup(self):
 		# Mensaje de arranque del agente
-		print(f"Avion {str(self.jid)} started")
+		print(f"[Sistema] Avión {str(self.jid).split('@')[0]} iniciado")
 		# Añadir comportamientos periódicos y el receptor
-		self.add_behaviour(self.StatusTick(period=1))
+		# self.add_behaviour(self.StatusTick(period=1))  # Comentado para reducir ruido
 		self.add_behaviour(self.SendVolando(period=5))
 		self.add_behaviour(self.RequestLanding(period=10))
 		self.add_behaviour(self.RecvBehav())
